@@ -42,16 +42,57 @@ import           Data.Time.Range.Types
 class AsDay p f s where
   _Day :: Optic' p f s Day
 
+-- | @Prism@ for going between the Gregorian version of the @Day@ type
+-- $setup
+-- >>> import Control.Lens
+-- >>> import Data.Time
+-- >>> :set -XFlexibleContexts
+-- >>> let d = fromGregorian (2017 :: Integer) (2 :: Int) (25 :: Int)
+
+-- |
+-- >>> d ^. re _Day :: (Integer, Int, Int)
+-- (2017,2,25)
+-- >>> (2017 :: Integer, 2 :: Int, 25 :: Int) ^? _Day
+-- Just 2017-02-25
+-- >>> (2017 :: Integer, 2 :: Int, 35 :: Int) ^? _Day
+-- Nothing
+-- >>> d ^. re _Day :: String
+-- "2017-02-25"
+-- >>> "2017-02-25" ^? _Day
+-- Just 2017-02-25
 instance (Choice p, Applicative f) => AsDay p f (Integer, Int, Int) where
   _Day = prism' toGregorian (\(y,m,d) -> fromGregorianValid y m d)
-
 instance (Choice p, Applicative f) => AsDay p f String where
   _Day = prism' showGregorian (parseTimeM False defaultTimeLocale "%Y-%m-%d")
 
+-- | Parse some common date formats to a @Day@
+--
+-- Examples:
+--
+-- >>> dayParse "2017-01-09"
+-- Right 2017-01-09
+--
+-- >>> dayParse "09/01/2017"
+-- Right 2017-01-09
+--
+-- >>> dayParse "30/02/2017"
+-- Left "Unable to parse Date Accepts [yyyy-mm-dd, yyyymmdd, mm/dd/yy, dd/mm/yyyy]: 30/02/2017"
+--
+-- >>> dayParse "20170109"
+-- Right 2017-01-09
+--
+-- >>> dayParse "010917"
+-- Left "Unable to parse Date Accepts [yyyy-mm-dd, yyyymmdd, mm/dd/yy, dd/mm/yyyy]: 010917"
+--
+-- >>> dayParse "02/13/17"
+-- Right 2017-02-13
+--
+-- >>> dayParse "2017-01-09"
+-- Right 2017-01-09
 dayParse :: String -> Either String Day
 dayParse s = maybe err Right $
   nom "%F" <|>
-  nom "%Y%m%d" <|>
+  nom "%0Y%m%d" <|>
   nom "%d/%m/%Y" <|>
   nom "%D"
   where

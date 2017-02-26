@@ -46,8 +46,13 @@ class AsDay p f s where
 -- $setup
 -- >>> import Control.Lens
 -- >>> import Data.Time
+-- >>> import Prelude (succ)
 -- >>> :set -XFlexibleContexts
 -- >>> let d = fromGregorian (2017 :: Integer) (2 :: Int) (25 :: Int)
+-- >>> let startD = _Wrapped # (fromGregorian (2017 :: Integer) (2 :: Int) (25 :: Int)) :: StartDate
+-- >>> let endD = _Wrapped # (fromGregorian (2017 :: Integer) (2 :: Int) (27 :: Int)) :: EndDate
+-- >>> let startH = (_Wrapped # (3 :: Natural)) :: StartHour
+-- >>> let endH = (_Wrapped # (5 :: Natural)) :: EndHour
 
 -- |
 -- >>> d ^. re _Day :: (Integer, Int, Int)
@@ -97,18 +102,10 @@ dayParse s = maybe err Right $
 
 -- | Given a wrapped start and end @Day@, as well as a chosen @Hour@, create a pair of wrapped @UTCTime@
 -- values that represent their upper and lower values. Used internally.
--- $setup
--- >>> import Control.Lens
--- >>> import Data.Time
--- >>> :set -XFlexibleContexts
--- >>> let startD = _Wrapped # (fromGregorian (2017 :: Integer) (2 :: Int) (25 :: Int)) :: StartDate
--- >>> let endD = _Wrapped # (fromGregorian (2017 :: Integer) (2 :: Int) (27 :: Int)) :: EndDate
--- >>> let startH = (_Wrapped # 3) :: StartHour
--- >>> let endH = (_Wrapped # 4) :: EndHour
 
 -- |
--- >>> bounds startD endD startH endH
--- LowerBound 2017-02-25 03:00:00 UTC,UpperBound 2017-02-27 04:00:00 UTC)
+-- >>> boundFromWrapped startD endD startH endH
+-- (LowerBound 2017-02-25 03:00:00 UTC,UpperBound 2017-02-27 05:00:00 UTC)
 boundFromWrapped
   :: ( Rewrapped s s
      , Rewrapped e e
@@ -146,16 +143,9 @@ boundFromWrapped sd ed sh eh =
 
 -- | Provide a range builder for any wrapped types that have
 -- an @Ord@ instance.
--- $setup
--- >>> import Control.Lens
--- >>> import Data.Time
--- >>> import Data.List.NonEmpty (NonEmpty)
--- >>> let startH = (_Wrapped # 3) :: StartHour
--- >>> let endH = (_Wrapped # 5) :: EndHour
-
--- |
+--
 -- >>> wrappedRange (_Wrapped #) succ startH endH :: NonEmpty StartHour
--- StartHour 3 :| [StartHour 4, StartHour 5]
+-- StartHour 3 :| [StartHour 4,StartHour 5]
 -- >>> wrappedRange (_Wrapped #) succ endH startH :: NonEmpty StartHour
 -- StartHour 5 :| []
 wrappedRange
@@ -224,16 +214,10 @@ utcRangeHours s e = runIdentity <$>
 
 -- | Given two wrapped @Day@ values, provide a @NonEmpty@ list of all the days
 -- in between.
--- $setup
--- >>> import Control.Lens
--- >>> import Data.Time
--- >>> :set -XFlexibleContexts
--- >>> let startD = _Wrapped # (fromGregorian (2017 :: Integer) (2 :: Int) (20 :: Int)) :: StartDate
--- >>> let endD = _Wrapped # (fromGregorian (2017 :: Integer) (2 :: Int) (27 :: Int)) :: EndDate
 
 -- |
 -- >>> datesInRange startD endD
--- DayInRange 2017-02-20 :| [DayInRange 2017-02-21,DayInRange 2017-02-22,DayInRange 2017-02-23,DayInRange 2017-02-24,DayInRange 2017-02-25,DayInRange 2017-02-26,DayInRange 2017-02-27]
+-- DayInRange 2017-02-25 :| [DayInRange 2017-02-26,DayInRange 2017-02-27]
 -- >>> datesInRange endD startD
 -- DayInRange 2017-02-27 :| []
 datesInRange

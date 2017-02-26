@@ -25,6 +25,15 @@ import GHC.Natural (Natural)
 import Data.Text (Text)
 import Data.List.NonEmpty (NonEmpty)
 
+-- | General purpose @newtype@ wrappers for some commonly used @Data.Time@ types.
+-- Helps to ensure you don't get your range ends mixed up, as well as providing
+-- some convenience when you only need to refer to particular levels of granularity
+-- in the time range.
+
+-- |
+-- Initial need of this library was only at the day and hour level, if there is a need
+-- more granular times can be added.
+
 newtype StartDate = StartDate Day
   deriving (Eq,Show,Generic)
 makeWrapped ''StartDate

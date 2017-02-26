@@ -56,12 +56,14 @@ class AsDay p f s where
 -- Just 2017-02-25
 -- >>> (2017 :: Integer, 2 :: Int, 35 :: Int) ^? _Day
 -- Nothing
+instance (Choice p, Applicative f) => AsDay p f (Integer, Int, Int) where
+  _Day = prism' toGregorian (\(y,m,d) -> fromGregorianValid y m d)
+
+-- |
 -- >>> d ^. re _Day :: String
 -- "2017-02-25"
 -- >>> "2017-02-25" ^? _Day
 -- Just 2017-02-25
-instance (Choice p, Applicative f) => AsDay p f (Integer, Int, Int) where
-  _Day = prism' toGregorian (\(y,m,d) -> fromGregorianValid y m d)
 instance (Choice p, Applicative f) => AsDay p f String where
   _Day = prism' showGregorian (parseTimeM False defaultTimeLocale "%Y-%m-%d")
 
@@ -71,22 +73,16 @@ instance (Choice p, Applicative f) => AsDay p f String where
 --
 -- >>> dayParse "2017-01-09"
 -- Right 2017-01-09
---
 -- >>> dayParse "09/01/2017"
 -- Right 2017-01-09
---
 -- >>> dayParse "30/02/2017"
 -- Left "Unable to parse Date Accepts [yyyy-mm-dd, yyyymmdd, mm/dd/yy, dd/mm/yyyy]: 30/02/2017"
---
 -- >>> dayParse "20170109"
 -- Right 2017-01-09
---
 -- >>> dayParse "010917"
 -- Left "Unable to parse Date Accepts [yyyy-mm-dd, yyyymmdd, mm/dd/yy, dd/mm/yyyy]: 010917"
---
 -- >>> dayParse "02/13/17"
 -- Right 2017-02-13
---
 -- >>> dayParse "2017-01-09"
 -- Right 2017-01-09
 dayParse :: String -> Either String Day
@@ -110,6 +106,7 @@ dayParse s = maybe err Right $
 -- >>> let startH = (_Wrapped # 3) :: StartHour
 -- >>> let endH = (_Wrapped # 4) :: EndHour
 
+-- |
 -- >>> bounds startD endD startH endH
 -- LowerBound 2017-02-25 03:00:00 UTC,UpperBound 2017-02-27 04:00:00 UTC)
 boundFromWrapped
@@ -156,6 +153,7 @@ boundFromWrapped sd ed sh eh =
 -- >>> let startH = (_Wrapped # 3) :: StartHour
 -- >>> let endH = (_Wrapped # 5) :: EndHour
 
+-- |
 -- >>> wrappedRange (_Wrapped #) succ startH endH :: NonEmpty StartHour
 -- StartHour 3 :| [StartHour 4, StartHour 5]
 -- >>> wrappedRange (_Wrapped #) succ endH startH :: NonEmpty StartHour
@@ -226,12 +224,14 @@ utcRangeHours s e = runIdentity <$>
 
 -- | Given two wrapped @Day@ values, provide a @NonEmpty@ list of all the days
 -- in between.
+-- $setup
 -- >>> import Control.Lens
 -- >>> import Data.Time
 -- >>> :set -XFlexibleContexts
 -- >>> let startD = _Wrapped # (fromGregorian (2017 :: Integer) (2 :: Int) (20 :: Int)) :: StartDate
 -- >>> let endD = _Wrapped # (fromGregorian (2017 :: Integer) (2 :: Int) (27 :: Int)) :: EndDate
 
+-- |
 -- >>> datesInRange startD endD
 -- DayInRange 2017-02-20 :| [DayInRange 2017-02-21,DayInRange 2017-02-22,DayInRange 2017-02-23,DayInRange 2017-02-24,DayInRange 2017-02-25,DayInRange 2017-02-26,DayInRange 2017-02-27]
 -- >>> datesInRange endD startD

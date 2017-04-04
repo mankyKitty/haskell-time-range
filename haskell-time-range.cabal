@@ -1,5 +1,5 @@
 name:                haskell-time-range
-version:             0.2.0.0
+version:             0.2.0.1
 synopsis:            Some useful wrappers and functions for building time ranges
 -- description:
 homepage:            https://github.com/mankyKitty/haskell-time-range#readme

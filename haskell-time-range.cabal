@@ -18,7 +18,7 @@ library
   exposed-modules:     Data.Time.Range
                      , Data.Time.Range.Types
   build-depends:       base >= 4.7 && < 5
-                     , lens >= 4.15
+                     , lens >= 4.10
                      , time
                      , text
                      , semigroups
